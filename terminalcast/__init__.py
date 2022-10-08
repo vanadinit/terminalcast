@@ -48,6 +48,10 @@ class TerminalCast:
             print(f'Port: {self._ip}')
         return self._port
 
+    def start_server(self):
+        Thread(target=self.run_server).start()
+        sleep(5)
+
     def run_server(self):
         app = Bottle()
 
@@ -67,20 +71,20 @@ class TerminalCast:
         httpserver.serve(handler, host=self.ip, port=str(self.port), daemon_threads=True)
 
     def select_cast(self):
+        self.cast: Chromecast
         print('Searching Chromecasts ...')
         chromecasts, browser = get_chromecasts()
-        browser.stop_discovery()
         match len(chromecasts):
             case 0:
                 raise Exception('No Chromecast available')
             case 1:
-                self.cast: Chromecast = chromecasts[0]
+                self.cast = chromecasts[0]
             case _:
                 casts = '\n'.join([
                     f'{index}: {cast.cast_info.friendly_name} ({cast.cast_info.host})'
                     for index, cast in enumerate(chromecasts)
                 ])
-                self.cast: Chromecast = chromecasts[int(input(f'Found multiple Chromecasts, please choose: \n{casts}\n'))]
+                self.cast = chromecasts[int(input(f'Found multiple Chromecasts, please choose: \n{casts}\n'))]
         self.cast.wait()
         print(f'Chromecast: {self.cast.cast_info.friendly_name}')
         print(f'Status: {self.cast.status}')
@@ -97,13 +101,10 @@ class TerminalCast:
 
 def main():
     parser = ArgumentParser(prog='terminalcast', description='Cast local videos to your chromecast')
-    parser.add_argument(
-        'filepath', help='file path'
-    )
+    parser.add_argument('filepath', help='file path')
     args = parser.parse_args()
 
     tc = TerminalCast(filepath=args.filepath)
     tc.select_cast()
-    Thread(target=tc.run_server).start()
-    sleep(5)
+    tc.start_server()
     tc.play_video()
