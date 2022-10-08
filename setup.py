@@ -19,7 +19,6 @@ setup(
         'bottle',
         'paste',
         'pychromecast',
-        'python-ffmpeg-video-streaming',
         'zeroconf==0.31.0',
     ],
     packages=find_packages(),

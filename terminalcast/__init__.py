@@ -4,7 +4,6 @@ from contextlib import closing
 from threading import Thread
 from time import sleep
 
-import ffmpeg_streaming
 from bottle import Bottle, static_file
 from paste import httpserver
 from paste.translogger import TransLogger
@@ -48,14 +47,6 @@ class TerminalCast:
             self._port = get_port()
             print(f'Port: {self._ip}')
         return self._port
-
-    def generate_dash_file(self):
-        # TODO Use DASH
-        video = ffmpeg_streaming.input(self.filepath)
-        dash = video.dash(ffmpeg_streaming.Formats.h264())
-        dash.auto_generate_representations()
-        # TODO add temp file
-        # dash.output()
 
     def run_server(self):
         app = Bottle()

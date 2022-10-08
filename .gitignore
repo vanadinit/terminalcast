@@ -1,3 +1,4 @@
 build/
 dist/
+http_root
 *.egg-info/
