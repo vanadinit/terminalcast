@@ -16,9 +16,11 @@ setup(
     license='MIT',
     python_requires='>=3.10',
     install_requires=[
-        'python-ffmpeg-video-streaming',
         'bottle',
+        'paste',
         'pychromecast',
+        'python-ffmpeg-video-streaming',
+        'zeroconf==0.31.0',
     ],
     packages=find_packages(),
     entry_points={
