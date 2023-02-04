@@ -103,6 +103,10 @@ class TerminalCast:
 def main():
     parser = ArgumentParser(prog='terminalcast', description='Cast local videos to your chromecast')
     parser.add_argument('filepath', help='file path')
+    # TODO audio stream selection
+    #  * check with ffmpeg, it there are multiple streams
+    #  * provide selection possibiliy
+    #  * reencode with ffmpeg if not the first stream, delete all others -> temp file
     args = parser.parse_args()
 
     tc = TerminalCast(filepath=args.filepath)

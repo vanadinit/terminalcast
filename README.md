@@ -18,14 +18,11 @@ In principle this should work with any Chromecast which is supported by https://
 In practice, I discovered that a Chromecast with Google TV enables you to control the player via the remote control, which is very nice.
 
 ## Installation
-Clone this repository and create a virtual Python environment.
-
 ```commandline
-pip install PATH_TO_TERMINALCAT_DIRECTORY
+pip install terminalcast
 ```
 
 ## Planned features
-* Installation via `pip install terminalcast` (pypi.org)
 * Select audio stream
 
 ## How is it working?
