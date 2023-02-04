@@ -1,8 +1,10 @@
 import socket
 from argparse import ArgumentParser
 from contextlib import closing
+from functools import cached_property
 from threading import Thread
 from time import sleep
+from typing import List
 
 from bottle import Bottle, static_file
 from paste import httpserver
@@ -27,27 +29,50 @@ def get_port() -> int:
         return s.getsockname()[1]
 
 
+def selector(entries: List[tuple]):
+    """Provides a command line interface for selecting from multiple entries
+    :param entries: List of Tuples(entry: Any, label: str)
+    """
+    match len(entries):
+        case 0:
+            return None
+        case 1:
+            return entries[0][0]
+        case _:
+            entry_labels = '\n'.join([
+                f'{index}: {entry[1]}'
+                for index, entry in enumerate(entries)
+            ])
+            return entries[int(input(f'Found multiple entries, please choose: \n{entry_labels}\n'))][0]
+
+
 class TerminalCast:
     def __init__(self, filepath: str):
         self.filepath = filepath
-        self.cast = None
 
-        self._ip = None
-        self._port = None
+    @cached_property
+    def ip(self) -> str:
+        return get_my_ip()
 
-    @property
-    def ip(self):
-        if self._ip is None:
-            self._ip = get_my_ip()
-            print(f'IP: {self._ip}')
-        return self._ip
+    @cached_property
+    def port(self) -> int:
+        return get_port()
 
-    @property
-    def port(self):
-        if self._port is None:
-            self._port = get_port()
-            print(f'Port: {self._ip}')
-        return self._port
+    @cached_property
+    def cast(self) -> Chromecast:
+        print('Searching Chromecasts ...')
+        chromecasts, browser = get_chromecasts()
+
+        chromecast = selector(entries=[
+            (cast, f'{cast.cast_info.friendly_name} ({cast.cast_info.host})')
+            for cast in chromecasts
+        ])
+
+        if chromecast:
+            chromecast.wait()
+            return chromecast
+
+        raise Exception('No Chromecast available')
 
     def start_server(self):
         Thread(target=self.run_server).start()
@@ -68,32 +93,11 @@ class TerminalCast:
             return response
 
         print('Starting server')
+        print(f'IP: {self.ip}, Port: {self.port}')
         handler = TransLogger(app, setup_console_handler=True)
         httpserver.serve(handler, host=self.ip, port=str(self.port), daemon_threads=True)
 
-    def select_cast(self):
-        self.cast: Chromecast
-        print('Searching Chromecasts ...')
-        chromecasts, browser = get_chromecasts()
-        match len(chromecasts):
-            case 0:
-                raise Exception('No Chromecast available')
-            case 1:
-                self.cast = chromecasts[0]
-            case _:
-                casts = '\n'.join([
-                    f'{index}: {cast.cast_info.friendly_name} ({cast.cast_info.host})'
-                    for index, cast in enumerate(chromecasts)
-                ])
-                self.cast = chromecasts[int(input(f'Found multiple Chromecasts, please choose: \n{casts}\n'))]
-        self.cast.wait()
-        print(f'Chromecast: {self.cast.cast_info.friendly_name}')
-        print(f'Status: {self.cast.status}')
-
     def play_video(self):
-        if self.cast is None:
-            self.select_cast()
-
         mc: MediaController = self.cast.media_controller
         mc.play_media(url=f'http://{self.ip}:{self.port}/video', content_type='video/mp4')
         mc.block_until_active()
@@ -110,6 +114,7 @@ def main():
     args = parser.parse_args()
 
     tc = TerminalCast(filepath=args.filepath)
-    tc.select_cast()
+    print(f'Chromecast: {tc.cast.cast_info.friendly_name}')
+    print(f'Status: {tc.cast.status}')
     tc.start_server()
     tc.play_video()
