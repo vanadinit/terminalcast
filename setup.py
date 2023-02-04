@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='terminalcast',
-    version='0.0.2',
+    version='0.1.0',
     description='Cast local videos to your chromecast',
     keywords=['Chromecast', 'video', 'local', 'movie'],
     long_description=long_description,
