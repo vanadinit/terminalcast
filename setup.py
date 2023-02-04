@@ -1,14 +1,14 @@
 from setuptools import find_packages, setup
 
-# with open("README.md", "r") as fh:
-#    long_description = fh.read()
+with open("README.md", "r") as fh:
+   long_description = fh.read()
 
 setup(
     name='terminalcast',
-    version='0.0.1',
+    version='0.0.2',
     description='Cast local videos to your chromecast',
     keywords=['Chromecast', 'video', 'local', 'movie'],
-    long_description='',  # long_description,
+    long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/vanadinit/terminalcast',
     author='Johannes Paul',
@@ -18,7 +18,7 @@ setup(
     install_requires=[
         'bottle',
         'paste',
-        'pychromecast',
+        'pychromecast>=13.0.0',
         'zeroconf==0.31.0',
     ],
     packages=find_packages(),

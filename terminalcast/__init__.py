@@ -8,6 +8,7 @@ from bottle import Bottle, static_file
 from paste import httpserver
 from paste.translogger import TransLogger
 from pychromecast import get_chromecasts, Chromecast
+from pychromecast.controllers.media import MediaController
 
 
 def get_my_ip() -> str:
@@ -93,7 +94,7 @@ class TerminalCast:
         if self.cast is None:
             self.select_cast()
 
-        mc = self.cast.media_controller
+        mc: MediaController = self.cast.media_controller
         mc.play_media(url=f'http://{self.ip}:{self.port}/video', content_type='video/mp4')
         mc.block_until_active()
         print(mc.status)
