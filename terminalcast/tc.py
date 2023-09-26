@@ -1,7 +1,10 @@
+import os
 from functools import cached_property
+from tempfile import mkstemp
 from threading import Thread
 from time import sleep
 
+import ffmpeg
 from bottle import Bottle, static_file
 from paste import httpserver
 from paste.translogger import TransLogger
@@ -68,3 +71,30 @@ class TerminalCast:
         mc.play_media(url=f'http://{self.ip}:{self.port}/video', content_type='video/mp4')
         mc.block_until_active()
         print(mc.status)
+
+
+def create_tmp_video_file(filepath: str, audio_index: int) -> str:
+    """
+    Create temporary video file with specified audio track only
+    :param filepath: file path of original video file
+    :param audio_index: stream index of requested audio track
+    :return: filename (including path)
+    """
+    tmp_file_path = mkstemp(
+        suffix='.mp4',
+        prefix=f'terminalcast_pid{os.getpid()}_',
+        dir='/var/tmp' if os.path.isdir('/var/tmp') else None)[1]
+    os.remove(tmp_file_path)
+
+    print(f'Create temporary video file at {tmp_file_path}')
+
+    input_stream = ffmpeg.input(filepath, loglevel='error')
+    video = input_stream['v']
+    audio = input_stream[audio_index]
+    ffmpeg.output(
+        video, audio, tmp_file_path,
+        codec='copy',
+    ).run()
+
+    print(f'Video created')
+    return tmp_file_path

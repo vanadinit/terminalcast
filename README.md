@@ -22,9 +22,6 @@ In practice, I discovered that a Chromecast with Google TV enables you to contro
 pip install terminalcast
 ```
 
-## Planned features
-* Select audio stream
-
 ## How is it working?
 **Terminalcast** creates a little HTTP Server at your current machine and serves your media file there. Then it tells the
 Chromecast the play the stream served at your IP with the corresponding path. That's it! (The devil is in the details.)
@@ -33,3 +30,5 @@ Chromecast the play the stream served at your IP with the corresponding path. Th
 served by [Paste](https://pypi.org/project/Paste/).
 
 On the other hand **Terminalcast** detects and plays the media via [PyChromecast](https://pypi.org/project/PyChromecast/).
+
+For file information and conversion [ffmpeg-python](https://pypi.org/project/ffmpeg-python/) is used.

@@ -1,13 +1,9 @@
-import os
 from argparse import ArgumentParser
 from importlib import metadata
-from tempfile import mkstemp
 
-import ffmpeg
-
-from .filedata import FileMetadata
+from .filedata import FileMetadata, AudioMetadata
 from .helper import selector
-from .tc import TerminalCast
+from .tc import TerminalCast, create_tmp_video_file
 
 VERSION = metadata.version('terminalcast')
 
@@ -23,28 +19,17 @@ def main():
     media_file_data = FileMetadata(filepath=args.filepath)
     print(media_file_data.details())
 
-    audio_stream = selector(entries=[
+    audio_stream: AudioMetadata = selector(entries=[
         (stream, f'Audio: {stream.title}')
         for stream in media_file_data.audio_streams
     ])
 
+    print(f'Select audio stream "{audio_stream.title}"')
+
     tmp_file_path = ''
     if audio_stream and audio_stream != media_file_data.audio_streams[0]:
-        tmp_file_path = mkstemp(
-            suffix='.mp4',
-            prefix=f'terminalcast_pid{os.getpid()}_',
-            dir='/var/tmp' if os.path.isdir('/var/tmp') else None)[1]
-        os.remove(tmp_file_path)
-
-        print(f'Create temporary video file at {tmp_file_path}')
-        input = ffmpeg.input(args.filepath, loglevel='error')
-        video = input['v']
-        audio = input[audio_stream.index[-1:]]
-        ffmpeg.output(
-            video, audio, tmp_file_path,
-            codec='copy',
-        ).run()
-        print(f'Video created')
+        print('Need to create temp file with selected audio track only')
+        tmp_file_path = create_tmp_video_file(filepath=args.filepath, audio_index=audio_stream.index[-1:])
 
     print('----- Initializing Chromecast -----')
     tc = TerminalCast(filepath=tmp_file_path or args.filepath)
