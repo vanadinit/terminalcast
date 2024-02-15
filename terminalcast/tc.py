@@ -1,4 +1,6 @@
 import os
+import socket
+from contextlib import closing
 from functools import cached_property
 from tempfile import mkstemp
 from threading import Thread
@@ -11,21 +13,41 @@ from paste.translogger import TransLogger
 from pychromecast import Chromecast, get_chromecasts
 from pychromecast.controllers.media import MediaController
 
-from .helper import selector
-from .network import get_my_ip, get_port
+from . import selector
 
 
 class TerminalCast:
-    def __init__(self, filepath: str):
+    def __init__(self, filepath: str, select_ip: bool):
         self.filepath = filepath
+        self.select_ip = select_ip
+        self.server_thread = None
 
     @cached_property
     def ip(self) -> str:
-        return get_my_ip()
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+            s.connect(("8.8.8.8", 53))
+            ip_rec = s.getsockname()[0]
+
+        if not self.select_ip:
+            return ip_rec
+
+        ip_list = []
+        for _ip in socket.gethostbyname_ex(socket.gethostname())[2]:
+            if _ip.startswith('127.'):
+                continue
+            label = f'{_ip} (recommended)' if _ip == ip_rec else _ip
+            ip_list.append((_ip, label))
+
+        if ip_list:
+            return selector(ip_list)
+        else:
+            return ip_rec
 
     @cached_property
     def port(self) -> int:
-        return get_port()
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+            s.bind(('0.0.0.0', 0))
+            return s.getsockname()[1]
 
     @cached_property
     def cast(self) -> Chromecast:
@@ -44,8 +66,12 @@ class TerminalCast:
         raise Exception('No Chromecast available')
 
     def start_server(self):
-        Thread(target=self.run_server).start()
+        self.server_thread = Thread(target=self.run_server).start()
         sleep(5)
+
+    def stop_server(self):
+        if isinstance(self.server_thread, Thread):
+            self.server_thread.join()
 
     def run_server(self):
         app = Bottle()

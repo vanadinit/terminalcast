@@ -15,4 +15,8 @@ def selector(entries: List[tuple]):
                 f'{index}: {entry[1]}'
                 for index, entry in enumerate(entries)
             ])
-            return entries[int(input(f'Found multiple entries, please choose: \n{entry_labels}\n'))][0]
+            try:
+                return entries[int(input(f'Found multiple entries, please choose: \n{entry_labels}\n'))][0]
+            except (ValueError, IndexError):
+                print('Invalid answer! Please try again and type the number of your desired answer.')
+                return selector(entries)

@@ -13,6 +13,11 @@ def main():
 
     parser = ArgumentParser(prog='terminalcast', description='Cast local videos to your chromecast')
     parser.add_argument('filepath', help='file path')
+    parser.add_argument(
+        '--select-ip',
+        action='store_true',
+        help='Flag to manually select the correct ip where the hosted file should be provided',
+    )
     args = parser.parse_args()
 
     print('----- File information -----')
@@ -31,8 +36,11 @@ def main():
         print('Need to create temp file with selected audio track only')
         tmp_file_path = create_tmp_video_file(filepath=args.filepath, audio_index=audio_stream.index[-1:])
 
+    print('----- Create Terminalcast and select IP -----')
+    tc = TerminalCast(filepath=tmp_file_path or args.filepath, select_ip=args.select_ip)
+    print(f'IP: {tc.ip}')
+
     print('----- Initializing Chromecast -----')
-    tc = TerminalCast(filepath=tmp_file_path or args.filepath)
     print(f'Chromecast: {tc.cast.cast_info.friendly_name}')
     print(f'Status: {tc.cast.status}')
 
