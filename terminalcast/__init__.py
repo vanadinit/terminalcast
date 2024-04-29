@@ -1,4 +1,4 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from importlib import metadata
 
 from .filedata import FileMetadata, AudioMetadata
@@ -6,6 +6,22 @@ from .helper import selector
 from .tc import TerminalCast, create_tmp_video_file
 
 VERSION = metadata.version('terminalcast')
+
+
+def select_audio(media_file_data: FileMetadata, args: Namespace) -> AudioMetadata:
+    if args.audio_title:
+        return [
+            stream
+            for stream in media_file_data.audio_streams
+            if stream.title == args.audio_title
+        ][0]
+    elif args.non_interactive:
+        return media_file_data.audio_streams[0]
+    else:
+        return selector(entries=[
+            (stream, f'Audio: {stream.title}')
+            for stream in media_file_data.audio_streams
+        ])
 
 
 def main():
@@ -18,18 +34,27 @@ def main():
         action='store_true',
         help='Flag to manually select the correct ip where the hosted file should be provided',
     )
+    parser.add_argument(
+        '--ip',
+        help='IP address where hosted file should be provided',
+    )
+    parser.add_argument(
+        '--audio-title',
+        help='Title of desired audio stream',
+    )
+    parser.add_argument(
+        '--non-interactive',
+        action='store_true',
+        help='For scripts and non interactive environments. Disables "select-ip" and auto-select all values not given',
+    )
     args = parser.parse_args()
 
     print('----- File information -----')
     media_file_data = FileMetadata(filepath=args.filepath)
     print(media_file_data.details())
 
-    audio_stream: AudioMetadata = selector(entries=[
-        (stream, f'Audio: {stream.title}')
-        for stream in media_file_data.audio_streams
-    ])
-
-    print(f'Select audio stream "{audio_stream.title}"')
+    audio_stream = select_audio(media_file_data=media_file_data, args=args)
+    print(f'Selecting audio stream "{audio_stream.title}"')
 
     tmp_file_path = ''
     if audio_stream and audio_stream != media_file_data.audio_streams[0]:
@@ -37,15 +62,18 @@ def main():
         tmp_file_path = create_tmp_video_file(filepath=args.filepath, audio_index=audio_stream.index[-1:])
 
     print('----- Create Terminalcast and select IP -----')
-    tc = TerminalCast(filepath=tmp_file_path or args.filepath, select_ip=args.select_ip)
-    print(f'IP: {tc.ip}')
+    tcast = TerminalCast(
+        filepath=tmp_file_path or args.filepath,
+        select_ip=args.ip or (args.select_ip and not args.non_interactive),
+    )
+    print(f'IP: {tcast.ip}')
 
     print('----- Initializing Chromecast -----')
-    print(f'Chromecast: {tc.cast.cast_info.friendly_name}')
-    print(f'Status: {tc.cast.status}')
+    print(f'Chromecast: {tcast.cast.cast_info.friendly_name}')
+    print(f'Status: {tcast.cast.status}')
 
     print('----- Starting HTTP Server -----')
-    tc.start_server()
+    tcast.start_server()
 
     print('----- Start playing video -----\n')
-    tc.play_video()
+    tcast.play_video()

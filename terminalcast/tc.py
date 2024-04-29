@@ -17,13 +17,16 @@ from . import selector
 
 
 class TerminalCast:
-    def __init__(self, filepath: str, select_ip: bool):
+    def __init__(self, filepath: str, select_ip: str | bool):
         self.filepath = filepath
         self.select_ip = select_ip
         self.server_thread = None
 
     @cached_property
     def ip(self) -> str:
+        if isinstance(self.select_ip, str):
+            return self.select_ip
+
         with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
             s.connect(("8.8.8.8", 53))
             ip_rec = s.getsockname()[0]
