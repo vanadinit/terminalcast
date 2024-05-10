@@ -19,7 +19,7 @@ setup(
         'bottle',
         'ffmpeg-python',
         'paste',
-        'pychromecast>=13.0.0',
+        'pychromecast==13.*',
         'zeroconf==0.31.0',
     ],
     packages=find_packages(),
