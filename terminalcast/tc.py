@@ -69,12 +69,21 @@ class TerminalCast:
         raise Exception('No Chromecast available')
 
     def start_server(self):
-        self.server_thread = Thread(target=self.run_server).start()
+        self.server_thread = Thread(target=self.run_server)
+        self.server_thread.start()
         sleep(5)
 
     def stop_server(self):
+        # See also https://blog.miguelgrinberg.com/post/how-to-kill-a-python-thread
+        # https://www.geeksforgeeks.org/python-different-ways-to-kill-a-thread/
         if isinstance(self.server_thread, Thread):
+            print('Trigger shutdown')
+            httpserver.killthread.async_raise(self.server_thread.ident, SystemExit)
             self.server_thread.join()
+            self.server_thread = None
+            print('Stopped server')
+        else:
+            print('No server thread to stop')
 
     def run_server(self):
         app = Bottle()
@@ -91,7 +100,7 @@ class TerminalCast:
             return response
 
         print('Starting server')
-        print(f'IP: {self.ip}, Port: {self.port}')
+        print(f'http://{self.ip}:{self.port}/video')
         handler = TransLogger(app, setup_console_handler=True)
         httpserver.serve(handler, host=self.ip, port=str(self.port), daemon_threads=True)
 
