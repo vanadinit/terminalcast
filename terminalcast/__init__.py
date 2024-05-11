@@ -3,7 +3,7 @@ from importlib import metadata
 
 from .filedata import FileMetadata, AudioMetadata
 from .helper import selector
-from .tc import TerminalCast, create_tmp_video_file
+from .tc import TerminalCast, create_tmp_video_file, run_http_server
 
 VERSION = metadata.version('terminalcast')
 

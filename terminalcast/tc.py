@@ -89,29 +89,33 @@ class TerminalCast:
         return f'http://{self.ip}:{self.port}/video'
 
     def run_server(self):
-        app = Bottle()
-
-        @app.get('/video')
-        def video():
-            response = static_file(self.filepath, root='/')
-            if 'Last-Modified' in response.headers:
-                del response.headers['Last-Modified']
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-            response.headers['Connection'] = 'keep-alive'
-            return response
-
-        print('Starting server')
         print(self.get_video_url())
-        handler = TransLogger(app, setup_console_handler=True)
-        httpserver.serve(handler, host=self.ip, port=str(self.port), daemon_threads=True)
+        run_http_server(filepath=self.filepath, ip=self.ip, port=self.port)
 
     def play_video(self):
         mc: MediaController = self.cast.media_controller
         mc.play_media(url=f'http://{self.ip}:{self.port}/video', content_type='video/mp4')
         mc.block_until_active()
         print(mc.status)
+
+
+def run_http_server(filepath: str, ip: str, port: int):
+    app = Bottle()
+
+    @app.get('/video')
+    def video():
+        response = static_file(filepath, root='/')
+        if 'Last-Modified' in response.headers:
+            del response.headers['Last-Modified']
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        response.headers['Connection'] = 'keep-alive'
+        return response
+
+    print('Starting server')
+    handler = TransLogger(app, setup_console_handler=True)
+    httpserver.serve(handler, host=ip, port=str(port), daemon_threads=True)
 
 
 def create_tmp_video_file(filepath: str, audio_index: int) -> str:
