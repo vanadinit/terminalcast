@@ -85,6 +85,9 @@ class TerminalCast:
         else:
             print('No server thread to stop')
 
+    def get_video_url(self) -> str:
+        return f'http://{self.ip}:{self.port}/video'
+
     def run_server(self):
         app = Bottle()
 
@@ -100,7 +103,7 @@ class TerminalCast:
             return response
 
         print('Starting server')
-        print(f'http://{self.ip}:{self.port}/video')
+        print(self.get_video_url())
         handler = TransLogger(app, setup_console_handler=True)
         httpserver.serve(handler, host=self.ip, port=str(self.port), daemon_threads=True)
 
