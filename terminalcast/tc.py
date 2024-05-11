@@ -94,7 +94,7 @@ class TerminalCast:
 
     def play_video(self):
         mc: MediaController = self.cast.media_controller
-        mc.play_media(url=f'http://{self.ip}:{self.port}/video', content_type='video/mp4')
+        mc.play_media(url=self.get_video_url(), content_type='video/mp4')
         mc.block_until_active()
         print(mc.status)
 
