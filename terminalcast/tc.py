@@ -66,7 +66,7 @@ class TerminalCast:
             chromecast.wait()
             return chromecast
 
-        raise Exception('No Chromecast available')
+        raise NoChromecastAvailable('No Chromecast available')
 
     def start_server(self):
         self.server_thread = Thread(target=self.run_server)
@@ -143,3 +143,7 @@ def create_tmp_video_file(filepath: str, audio_index: int) -> str:
 
     print(f'Video created')
     return tmp_file_path
+
+
+class NoChromecastAvailable(Exception):
+    pass
