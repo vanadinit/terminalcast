@@ -98,6 +98,23 @@ tcast.play_video()
 # You might want to add logic to handle server shutdown, etc.
 ```
 
+## Contributing
+Contributions are welcome! To set up your development environment:
+
+1.  **Clone the repository**
+2.  **Install dependencies:** This will install the project in editable mode with all development tools.
+    ```bash
+    make install
+    ```
+3.  **Install the pre-commit hook:** This will run quick checks before each commit.
+    ```bash
+    pre-commit install
+    ```
+4.  **Run all checks:** You can run all linters, type checks, and tests manually at any time.
+    ```bash
+    make check
+    ```
+
 ## How is it working?
 **Terminalcast** creates a little HTTP Server at your current machine and serves your media file there. Then it tells the
 Chromecast the play the stream served at your IP with the corresponding path. That's it! (The devil is in the details.)
