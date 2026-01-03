@@ -22,19 +22,24 @@ def selector(entries: List[tuple]):
                 return selector(entries)
 
 
-def format_bytes(size: int | str | None):
+def format_bytes(size: int | str | None) -> str:
+    if size is None:
+        return "-"
     try:
-        power = 2**10
         n = int(size)
-        if n <= power:
-            return f"{n} B"
-        for unit in ['KB', 'MB', 'GB']:
-            n /= power
-            if n < power:
-                return f"{n:.1f} {unit}"
-        return f"{n:.1f} TB"
     except (ValueError, TypeError):
         return "-"
+
+    power = 1024
+    if n < power:
+        return f"{n} B"
+    
+    n_float = float(n)
+    for unit in ['KB', 'MB', 'GB']:
+        n_float /= power
+        if n_float < power:
+            return f"{n_float:.1f} {unit}"
+    return f"{n_float:.1f} TB"
 
 
 def simplify_user_agent(ua: str) -> str:

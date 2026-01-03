@@ -32,6 +32,21 @@ Homepage = "https://github.com/vanadinit/terminalcast"
 [project.scripts]
 terminalcast = "terminalcast:main"
 
+[project.optional-dependencies]
+dev = [
+  "ruff",
+  "mypy",
+  "pytest",
+  "pre-commit",
+]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["terminalcast*"]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:'cgi' is deprecated:DeprecationWarning:bottle",
+    "ignore:Type google\\._upb\\._message\\.MessageMapContainer uses PyType_Spec:DeprecationWarning",
+    "ignore:Type google\\._upb\\._message\\.ScalarMapContainer uses PyType_Spec:DeprecationWarning",
+]

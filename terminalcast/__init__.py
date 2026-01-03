@@ -8,6 +8,17 @@ from .tc import create_tmp_video_file, run_http_server, NoChromecastAvailable, T
 
 VERSION = metadata.version('terminalcast')
 
+__all__ = [
+    "TerminalCast",
+    "FileMetadata",
+    "AudioMetadata",
+    "create_tmp_video_file",
+    "run_http_server",
+    "NoChromecastAvailable",
+    "selector",
+    "VERSION",
+]
+
 
 def select_audio(media_file_data: FileMetadata, args: Namespace) -> AudioMetadata:
     if args.audio_title:

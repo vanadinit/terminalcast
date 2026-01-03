@@ -1,5 +1,4 @@
 import os
-import re
 import socket
 import time
 from contextlib import closing
@@ -20,7 +19,7 @@ from .helper import format_bytes, selector, simplify_user_agent
 
 
 class TerminalCast:
-    def __init__(self, filepath: str, select_ip: str | bool, known_hosts: List[str] = None):
+    def __init__(self, filepath: str, select_ip: str | bool, known_hosts: List[str] | None = None):
         self.filepath = os.path.abspath(filepath)
         self.select_ip = select_ip
         self.known_hosts = known_hosts
@@ -119,9 +118,9 @@ def run_http_server(filepath: str, ip: str, port: int):
 
 def create_tmp_video_file(
     filepath: str,
-    audio_index: int,
+    audio_index: str | int,
     duration: float,
-    progress_callback: Callable[[float], None] = None
+    progress_callback: Callable[[float], None] | None = None
 ) -> str:
     """
     Create temporary video file with specified audio track only
@@ -152,7 +151,7 @@ def create_tmp_video_file(
 
     input_stream = ffmpeg.input(filepath)
     video = input_stream['v']
-    audio = input_stream[audio_index]
+    audio = input_stream[str(audio_index)]
     
     process = (
         ffmpeg.output(video, audio, tmp_file_path, codec='copy', progress='pipe:1')
@@ -167,11 +166,11 @@ def create_tmp_video_file(
                 progress = (time_ms / (duration * 1000000)) * 100
                 pbar.n = int(progress)
                 pbar.refresh()
-                if progress_callback:
+                if progress_callback is not None:
                     progress_callback(progress)
 
     process.wait()
-    print(f'Video created')
+    print('Video created')
     return tmp_file_path
 
 

@@ -63,7 +63,7 @@ class FileMetadata(Metadata):
             AudioMetadata(
                 index=f'0:{stream["index"]}',
                 codec=stream['codec_name'],
-                title=stream.get('tags', {}).get('language', f'Audio (unknown)'),
+                title=stream.get('tags', {}).get('language', 'Audio (unknown)'),
                 channels=stream['channels'],
             )
             for stream in self.ffoutput['streams']
@@ -76,7 +76,7 @@ class FileMetadata(Metadata):
             StreamMetadata(
                 index=f'0:{stream["index"]}',
                 codec=stream['codec_name'],
-                title=stream.get('tags', {}).get('language', f'Video (unknown)'),
+                title=stream.get('tags', {}).get('language', 'Video (unknown)'),
             )
             for stream in self.ffoutput['streams']
             if stream.get('codec_type') == 'video'
