@@ -55,6 +55,7 @@ class TerminalCast:
     @cached_property
     def cast(self) -> Chromecast:
         print('Searching Chromecasts ...')
+        # TODO: known_hosts, if network discovery is broken
         chromecasts, browser = get_chromecasts()
 
         chromecast = selector(entries=[
