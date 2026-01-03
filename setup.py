@@ -18,9 +18,9 @@ setup(
     install_requires=[
         'bottle',
         'ffmpeg-python',
-        'paste',
-        'pychromecast==13.*',
-        'zeroconf==0.31.0',
+        'waitress',
+        'pychromecast>=13.0.0',
+        'zeroconf>=0.31.0',
     ],
     packages=find_packages(),
     entry_points={

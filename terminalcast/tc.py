@@ -1,6 +1,7 @@
 import os
 import socket
 from contextlib import closing
+from datetime import datetime
 from functools import cached_property
 from tempfile import mkstemp
 from threading import Thread
@@ -8,8 +9,7 @@ from time import sleep
 
 import ffmpeg
 from bottle import Bottle, static_file
-from paste import httpserver
-from paste.translogger import TransLogger
+from waitress import serve
 from pychromecast import Chromecast, get_chromecasts
 from pychromecast.controllers.media import MediaController
 
@@ -74,18 +74,6 @@ class TerminalCast:
         self.server_thread.start()
         sleep(5)
 
-    def stop_server(self):
-        # See also https://blog.miguelgrinberg.com/post/how-to-kill-a-python-thread
-        # https://www.geeksforgeeks.org/python-different-ways-to-kill-a-thread/
-        if isinstance(self.server_thread, Thread):
-            print('Trigger shutdown')
-            httpserver.killthread.async_raise(self.server_thread.ident, SystemExit)
-            self.server_thread.join()
-            self.server_thread = None
-            print('Stopped server')
-        else:
-            print('No server thread to stop')
-
     def get_video_url(self) -> str:
         return f'http://{self.ip}:{self.port}/video'
 
@@ -98,6 +86,18 @@ class TerminalCast:
         mc.play_media(url=self.get_video_url(), content_type='video/mp4')
         mc.block_until_active()
         print(mc.status)
+
+
+class RequestLogger:
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        def custom_start_response(status, headers, exc_info=None):
+            print(f"{datetime.now().strftime('%d/%b/%Y %H:%M:%S')} \"{environ['REQUEST_METHOD']} {environ['PATH_INFO']}\" {status}")
+            return start_response(status, headers, exc_info)
+
+        return self.app(environ, custom_start_response)
 
 
 def run_http_server(filepath: str, ip: str, port: int):
@@ -115,8 +115,7 @@ def run_http_server(filepath: str, ip: str, port: int):
         return response
 
     print('Starting server')
-    handler = TransLogger(app, setup_console_handler=True)
-    httpserver.serve(handler, host=ip, port=str(port), daemon_threads=True)
+    serve(RequestLogger(app), host=ip, port=port, _quiet=True)
 
 
 def create_tmp_video_file(filepath: str, audio_index: int) -> str:
