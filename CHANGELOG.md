@@ -1,5 +1,9 @@
 # Terminalcast
 
+## 1.2.1
+* Expose `run_http_server` and `NoChromecastAvailable` for library usage
+* Update github workflow
+
 ## 1.2.0
 * Add progress bar for video conversion when selecting a different audio track
 * Add support for custom temporary directory via env var `TERMINALCAST_TMP_DIR` (uses RAM disk by default if available)
