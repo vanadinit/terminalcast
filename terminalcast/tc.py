@@ -6,6 +6,7 @@ from datetime import datetime
 from functools import cached_property
 from tempfile import mkstemp
 from threading import Thread
+from typing import List
 
 import ffmpeg
 from bottle import Bottle, static_file, request, response
@@ -17,9 +18,10 @@ from .helper import format_bytes, selector, simplify_user_agent
 
 
 class TerminalCast:
-    def __init__(self, filepath: str, select_ip: str | bool):
+    def __init__(self, filepath: str, select_ip: str | bool, known_hosts: List[str] = None):
         self.filepath = os.path.abspath(filepath)
         self.select_ip = select_ip
+        self.known_hosts = known_hosts
         self.server_thread = None
 
     @cached_property
@@ -55,8 +57,7 @@ class TerminalCast:
     @cached_property
     def cast(self) -> Chromecast:
         print('Searching Chromecasts ...')
-        # TODO: known_hosts, if network discovery is broken
-        chromecasts, browser = get_chromecasts()
+        chromecasts, browser = get_chromecasts(known_hosts=self.known_hosts)
 
         chromecast = selector(entries=[
             (cast, f'{cast.cast_info.friendly_name} ({cast.cast_info.host})')

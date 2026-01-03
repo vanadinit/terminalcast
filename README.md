@@ -22,12 +22,30 @@ In practice, I discovered that a Chromecast with Google TV enables you to contro
 pip install terminalcast
 ```
 
+## Usage
+
+### Basic Usage
+```commandline
+terminalcast my_video.mp4
+```
+
+### Known Hosts
+If network discovery fails (e.g. due to network restrictions), you can specify known Chromecast IPs:
+```commandline
+terminalcast my_video.mp4 --known-hosts 192.168.1.50,192.168.1.51
+```
+Alternatively, set the environment variable `TERMINALCAST_KNOWN_HOSTS`:
+```bash
+export TERMINALCAST_KNOWN_HOSTS="192.168.1.50,192.168.1.51"
+terminalcast my_video.mp4
+```
+
 ## How is it working?
 **Terminalcast** creates a little HTTP Server at your current machine and serves your media file there. Then it tells the
 Chromecast the play the stream served at your IP with the corresponding path. That's it! (The devil is in the details.)
 
 **Terminalcast** uses [Bottle](https://bottlepy.org/docs/dev/) to create a small app providing the media file. This app is
-served by [Paste](https://pypi.org/project/Paste/).
+served by [Waitress](https://docs.pylonsproject.org/projects/waitress/en/stable/).
 
 On the other hand **Terminalcast** detects and plays the media via [PyChromecast](https://pypi.org/project/PyChromecast/).
 

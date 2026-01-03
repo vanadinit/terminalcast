@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from importlib import metadata
+from os import getenv
 
 from .filedata import FileMetadata, AudioMetadata
 from .helper import selector
@@ -47,6 +48,11 @@ def main():
         action='store_true',
         help='For scripts and non interactive environments. Disables "select-ip" and auto-select all values not given',
     )
+    parser.add_argument(
+        '--known-hosts',
+        help='Comma separated list of known Chromecast IPs',
+        default=getenv('TERMINALCAST_KNOWN_HOSTS', ''),
+    )
     args = parser.parse_args()
 
     print('----- File information -----')
@@ -62,9 +68,11 @@ def main():
         tmp_file_path = create_tmp_video_file(filepath=args.filepath, audio_index=audio_stream.index[-1:])
 
     print('----- Create Terminalcast and select IP -----')
+    known_hosts = args.known_hosts.split(',') if args.known_hosts else None
     tcast = TerminalCast(
         filepath=tmp_file_path or args.filepath,
         select_ip=args.ip or (args.select_ip and not args.non_interactive),
+        known_hosts=known_hosts,
     )
     print(f'IP: {tcast.ip}')
 

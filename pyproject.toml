@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "terminalcast"
+version = "1.1.0"
+description = "Cast local videos to your chromecast"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  {name = "Johannes Paul", email = "vanadinit@quantentunnel.de"}
+]
+keywords = ["Chromecast", "video", "local", "movie"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+  "bottle",
+  "ffmpeg-python",
+  "waitress",
+  "pychromecast>=13.0.0",
+  "zeroconf>=0.31.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/vanadinit/terminalcast"
+
+[project.scripts]
+terminalcast = "terminalcast:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["terminalcast*"]
