@@ -54,6 +54,10 @@ class FileMetadata(Metadata):
         return ffmpeg.probe(self.filepath)
 
     @cached_property
+    def duration(self) -> float:
+        return float(self.ffoutput['format']['duration'])
+
+    @cached_property
     def audio_streams(self) -> List[AudioMetadata]:
         return [
             AudioMetadata(

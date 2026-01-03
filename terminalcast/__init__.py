@@ -4,7 +4,7 @@ from os import getenv
 
 from .filedata import FileMetadata, AudioMetadata
 from .helper import selector
-from .tc import TerminalCast, create_tmp_video_file, run_http_server
+from .tc import TerminalCast, create_tmp_video_file
 
 VERSION = metadata.version('terminalcast')
 
@@ -65,7 +65,11 @@ def main():
     tmp_file_path = ''
     if audio_stream and audio_stream != media_file_data.audio_streams[0]:
         print('Need to create temp file with selected audio track only')
-        tmp_file_path = create_tmp_video_file(filepath=args.filepath, audio_index=audio_stream.index[-1:])
+        tmp_file_path = create_tmp_video_file(
+            filepath=args.filepath,
+            audio_index=audio_stream.index[-1:],
+            duration=media_file_data.duration,
+        )
 
     print('----- Create Terminalcast and select IP -----')
     known_hosts = args.known_hosts.split(',') if args.known_hosts else None

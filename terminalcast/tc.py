@@ -1,4 +1,5 @@
 import os
+import re
 import socket
 import time
 from contextlib import closing
@@ -6,12 +7,13 @@ from datetime import datetime
 from functools import cached_property
 from tempfile import mkstemp
 from threading import Thread
-from typing import List
+from typing import List, Callable
 
 import ffmpeg
 from bottle import Bottle, static_file, request, response
 from pychromecast import Chromecast, get_chromecasts
 from pychromecast.controllers.media import MediaController
+from tqdm import tqdm
 from waitress import serve
 
 from .helper import format_bytes, selector, simplify_user_agent
@@ -115,29 +117,60 @@ def run_http_server(filepath: str, ip: str, port: int):
     serve(app, host=ip, port=port, _quiet=True)
 
 
-def create_tmp_video_file(filepath: str, audio_index: int) -> str:
+def create_tmp_video_file(
+    filepath: str,
+    audio_index: int,
+    duration: float,
+    progress_callback: Callable[[float], None] = None
+) -> str:
     """
     Create temporary video file with specified audio track only
     :param filepath: file path of original video file
     :param audio_index: stream index of requested audio track
+    :param duration: total duration of the video in seconds
+    :param progress_callback: function to call with progress percentage
     :return: filename (including path)
     """
+    # Prioritize env var, then fall back to smart detection
+    temp_dir = os.getenv('TERMINALCAST_TMP_DIR')
+    if not temp_dir or not os.path.isdir(temp_dir):
+        if os.path.isdir('/dev/shm'):
+            temp_dir = '/dev/shm'
+        elif os.path.isdir('/var/tmp'):
+            temp_dir = '/var/tmp'
+        else:
+            temp_dir = None  # Use system default
+
     tmp_file_path = mkstemp(
         suffix='.mp4',
         prefix=f'terminalcast_pid{os.getpid()}_',
-        dir='/var/tmp' if os.path.isdir('/var/tmp') else None)[1]
+        dir=temp_dir
+    )[1]
     os.remove(tmp_file_path)
 
     print(f'Create temporary video file at {tmp_file_path}')
 
-    input_stream = ffmpeg.input(filepath, loglevel='error')
+    input_stream = ffmpeg.input(filepath)
     video = input_stream['v']
     audio = input_stream[audio_index]
-    ffmpeg.output(
-        video, audio, tmp_file_path,
-        codec='copy',
-    ).run()
+    
+    process = (
+        ffmpeg.output(video, audio, tmp_file_path, codec='copy', progress='pipe:1')
+        .run_async(pipe_stdout=True, pipe_stderr=True)
+    )
 
+    with tqdm(total=100, desc="Converting") as pbar:
+        for line in process.stdout:
+            line = line.decode('utf-8')
+            if 'out_time_ms' in line:
+                time_ms = int(line.split('=')[1])
+                progress = (time_ms / (duration * 1000000)) * 100
+                pbar.n = int(progress)
+                pbar.refresh()
+                if progress_callback:
+                    progress_callback(progress)
+
+    process.wait()
     print(f'Video created')
     return tmp_file_path
 
