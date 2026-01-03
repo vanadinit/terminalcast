@@ -1,24 +1,24 @@
 import os
 import socket
+import time
 from contextlib import closing
 from datetime import datetime
 from functools import cached_property
 from tempfile import mkstemp
 from threading import Thread
-from time import sleep
 
 import ffmpeg
-from bottle import Bottle, static_file
-from waitress import serve
+from bottle import Bottle, static_file, request, response
 from pychromecast import Chromecast, get_chromecasts
 from pychromecast.controllers.media import MediaController
+from waitress import serve
 
-from . import selector
+from .helper import format_bytes, selector, simplify_user_agent
 
 
 class TerminalCast:
     def __init__(self, filepath: str, select_ip: str | bool):
-        self.filepath = filepath
+        self.filepath = os.path.abspath(filepath)
         self.select_ip = select_ip
         self.server_thread = None
 
@@ -72,7 +72,7 @@ class TerminalCast:
     def start_server(self):
         self.server_thread = Thread(target=self.run_server)
         self.server_thread.start()
-        sleep(5)
+        time.sleep(5)
 
     def get_video_url(self) -> str:
         return f'http://{self.ip}:{self.port}/video'
@@ -88,34 +88,30 @@ class TerminalCast:
         print(mc.status)
 
 
-class RequestLogger:
-    def __init__(self, app):
-        self.app = app
-
-    def __call__(self, environ, start_response):
-        def custom_start_response(status, headers, exc_info=None):
-            print(f"{datetime.now().strftime('%d/%b/%Y %H:%M:%S')} \"{environ['REQUEST_METHOD']} {environ['PATH_INFO']}\" {status}")
-            return start_response(status, headers, exc_info)
-
-        return self.app(environ, custom_start_response)
-
-
 def run_http_server(filepath: str, ip: str, port: int):
     app = Bottle()
 
+    @app.hook('after_request')
+    def log_request():
+        ts = datetime.now().astimezone().strftime('%d/%b/%Y %H:%M:%S %z')
+        length = format_bytes(response.headers.get('Content-Length'))
+        addr = request.remote_addr or '-'
+        ua = simplify_user_agent(request.headers.get('User-Agent', '-'))
+
+        print(f'[{ts}] {request.method} {request.path} {response.status_code} ({length}) from {addr} ({ua})')
+
     @app.get('/video')
     def video():
-        response = static_file(filepath, root='/')
-        if 'Last-Modified' in response.headers:
-            del response.headers['Last-Modified']
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        response.headers['Connection'] = 'keep-alive'
-        return response
+        resp = static_file(filepath, root='/')
+        if 'Last-Modified' in resp.headers:
+            del resp.headers['Last-Modified']
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        resp.headers['Access-Control-Allow-Methods'] = 'GET, HEAD'
+        resp.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return resp
 
     print('Starting server')
-    serve(RequestLogger(app), host=ip, port=port, _quiet=True)
+    serve(app, host=ip, port=port, _quiet=True)
 
 
 def create_tmp_video_file(filepath: str, audio_index: int) -> str:

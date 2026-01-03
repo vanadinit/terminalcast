@@ -20,3 +20,47 @@ def selector(entries: List[tuple]):
             except (ValueError, IndexError):
                 print('Invalid answer! Please try again and type the number of your desired answer.')
                 return selector(entries)
+
+
+def format_bytes(size: int | str | None):
+    try:
+        power = 2**10
+        n = int(size)
+        if n <= power:
+            return f"{n} B"
+        for unit in ['KB', 'MB', 'GB']:
+            n /= power
+            if n < power:
+                return f"{n:.1f} {unit}"
+        return f"{n:.1f} TB"
+    except (ValueError, TypeError):
+        return "-"
+
+
+def simplify_user_agent(ua: str) -> str:
+    if not ua or ua == '-':
+        return '-'
+    
+    ua_lower = ua.lower()
+    
+    if 'crkey' in ua_lower or 'chromecast' in ua_lower:
+        return 'Chromecast'
+    if 'curl' in ua_lower:
+        return 'Curl'
+    if 'wget' in ua_lower:
+        return 'Wget'
+    if 'python' in ua_lower:
+        return 'Python'
+    
+    # Browser detection
+    if 'edg' in ua_lower:
+        return 'Edge'
+    if 'chrome' in ua_lower and 'chromium' not in ua_lower:
+        return 'Chrome'
+    if 'firefox' in ua_lower:
+        return 'Firefox'
+    if 'safari' in ua_lower and 'chrome' not in ua_lower:
+        return 'Safari'
+        
+    # Fallback: return the first part (usually Mozilla/5.0) or a shortened version
+    return ua.split(' ')[0]
