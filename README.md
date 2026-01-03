@@ -40,6 +40,64 @@ export TERMINALCAST_KNOWN_HOSTS="192.168.1.50,192.168.1.51"
 terminalcast my_video.mp4
 ```
 
+### Temporary File Location
+When selecting a different audio track, a temporary file is created. To speed this up, you can specify a directory for these files, ideally a RAM disk. A progress bar will be shown during this process.
+
+The default priority is:
+1. `TERMINALCAST_TMP_DIR` environment variable
+2. `/dev/shm` (RAM disk on Linux)
+3. `/var/tmp`
+4. System default
+
+Example:
+```bash
+export TERMINALCAST_TMP_DIR="/my/fast/disk"
+terminalcast my_video.mp4 --audio-title "English"
+```
+
+## Using as a Library
+You can also use `terminalcast` as a library in your own projects.
+
+```python
+from terminalcast import FileMetadata, TerminalCast, create_tmp_video_file
+
+# 1. Get file metadata
+filepath = "my_video.mp4"
+media_file = FileMetadata(filepath=filepath)
+print(media_file.details())
+
+# 2. Select an audio stream (e.g., the first one)
+audio_stream = media_file.audio_streams[0]
+
+# 3. (Optional) Create a temporary file if a different audio track is needed
+# This shows a progress bar and can take a callback for progress updates
+def my_progress_callback(progress: float):
+    print(f"Conversion progress: {progress:.2f}%")
+
+tmp_filepath = create_tmp_video_file(
+    filepath=filepath,
+    audio_index=audio_stream.index[-1:],
+    duration=media_file.duration,
+    progress_callback=my_progress_callback
+)
+
+# 4. Initialize TerminalCast
+# You can pass known_hosts as a list of IPs
+tcast = TerminalCast(
+    filepath=tmp_filepath or filepath,
+    select_ip=False,  # or True for interactive selection, or a specific IP string
+    known_hosts=["192.168.1.50"]
+)
+
+# 5. Start the server and play
+print(f"Casting to: {tcast.cast.cast_info.friendly_name}")
+tcast.start_server()
+tcast.play_video()
+
+# The video is now playing. The script will block here until playback is active.
+# You might want to add logic to handle server shutdown, etc.
+```
+
 ## How is it working?
 **Terminalcast** creates a little HTTP Server at your current machine and serves your media file there. Then it tells the
 Chromecast the play the stream served at your IP with the corresponding path. That's it! (The devil is in the details.)

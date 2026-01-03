@@ -1,5 +1,9 @@
 # Terminalcast
 
+## 1.2.0
+* Add progress bar for video conversion when selecting a different audio track
+* Add support for custom temporary directory via env var `TERMINALCAST_TMP_DIR` (uses RAM disk by default if available)
+
 ## 1.1.0
 * Replace paste (deprecated) with waitress as WSGI server
 * Update pychromecast and zeroconf dependencies

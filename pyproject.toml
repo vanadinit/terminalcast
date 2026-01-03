@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "terminalcast"
-version = "1.1.0"
+version = "1.2.0"
 description = "Cast local videos to your chromecast"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -23,6 +23,7 @@ dependencies = [
   "waitress",
   "pychromecast>=13.0.0",
   "zeroconf>=0.31.0",
+  "tqdm",
 ]
 
 [project.urls]
