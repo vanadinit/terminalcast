@@ -79,7 +79,7 @@ terminalcast my_video.mp4 --audio-title "English"
 ```
 
 ## Using as a Library
-You can also use `terminalcast` as a library in your own projects.
+You can also use `terminalcast` as a library in your own projects. Environment variables like `TERMINALCAST_PORT` or `TERMINALCAST_KNOWN_HOSTS` are automatically respected.
 
 ```python
 from terminalcast import FileMetadata, TerminalCast, create_tmp_video_file
@@ -105,13 +105,14 @@ tmp_filepath = create_tmp_video_file(
 )
 
 # 4. Initialize TerminalCast
-# You can pass known_hosts as a list of IPs and a specific port
+# You can pass known_hosts as a list of IPs and a specific port,
+# or rely on environment variables.
 tcast = TerminalCast(
     filepath=tmp_filepath or filepath,
     select_ip=False,  # or True for interactive selection, or a specific IP string
-    known_hosts=["192.168.1.50"],
-    port=8080,
-    video_url="https://my-server.com/cast/video"
+    # known_hosts=["192.168.1.50"],  # Optional: overrides env var
+    # port=8080,                     # Optional: overrides env var
+    # video_url="..."                # Optional: overrides env var
 )
 
 # 5. Start the server and play

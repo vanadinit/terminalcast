@@ -4,6 +4,7 @@ import time
 from contextlib import closing
 from datetime import datetime
 from functools import cached_property
+from os import getenv
 from tempfile import mkstemp
 from threading import Thread
 from typing import Callable
@@ -19,12 +20,19 @@ from .helper import format_bytes, selector, simplify_user_agent
 
 
 class TerminalCast:
-    def __init__(self, filepath: str, select_ip: str | bool, known_hosts: list[str] | None = None, port: int | None = None, video_url: str | None = None):
+    def __init__(
+            self, filepath: str, select_ip: str | bool,
+            known_hosts: str | None = getenv('TERMINALCAST_KNOWN_HOSTS'),
+            port: int | str | None = getenv('TERMINALCAST_PORT'),
+            video_url: str | None = getenv('TERMINALCAST_VIDEO_URL')
+    ):
         self.filepath = os.path.abspath(filepath)
         self.select_ip = select_ip
-        self.known_hosts = known_hosts
-        self.requested_port = port
+
+        self.known_hosts = known_hosts.split(',') if known_hosts else None
+        self.requested_port = int(port) if port else None
         self.video_url = video_url
+        
         self.server_thread = None
 
     @cached_property
@@ -124,10 +132,10 @@ def run_http_server(filepath: str, ip: str, port: int):
 
 
 def create_tmp_video_file(
-    filepath: str,
-    audio_index: str | int,
-    duration: float,
-    progress_callback: Callable[[float], None] | None = None
+        filepath: str,
+        audio_index: str | int,
+        duration: float,
+        progress_callback: Callable[[float], None] | None = None
 ) -> str:
     """
     Create temporary video file with specified audio track only
@@ -159,7 +167,7 @@ def create_tmp_video_file(
     input_stream = ffmpeg.input(filepath)
     video = input_stream['v']
     audio = input_stream[str(audio_index)]
-    
+
     process = (
         ffmpeg.output(video, audio, tmp_file_path, codec='copy', progress='pipe:1')
         .run_async(pipe_stdout=True, pipe_stderr=True)

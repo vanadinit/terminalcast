@@ -1,6 +1,5 @@
 from argparse import ArgumentParser, Namespace
 from importlib import metadata
-from os import getenv
 
 from .filedata import AudioMetadata, FileMetadata
 from .helper import selector
@@ -54,12 +53,10 @@ def main():
         '--port',
         help='Port where hosted file should be provided',
         type=int,
-        default=int(getenv('TERMINALCAST_PORT', 0)) or None,
     )
     parser.add_argument(
         '--video-url',
         help='Full URL where the video is accessible (e.g. https://my-server.com/cast/video)',
-        default=getenv('TERMINALCAST_VIDEO_URL'),
     )
     parser.add_argument(
         '--audio-title',
@@ -73,7 +70,6 @@ def main():
     parser.add_argument(
         '--known-hosts',
         help='Comma separated list of known Chromecast IPs',
-        default=getenv('TERMINALCAST_KNOWN_HOSTS', ''),
     )
     args = parser.parse_args()
 
@@ -94,11 +90,11 @@ def main():
         )
 
     print('----- Create Terminalcast and select IP -----')
-    known_hosts = args.known_hosts.split(',') if args.known_hosts else None
+
     tcast = TerminalCast(
         filepath=tmp_file_path or args.filepath,
         select_ip=args.ip or (args.select_ip and not args.non_interactive),
-        known_hosts=known_hosts,
+        known_hosts=args.known_hosts,
         port=args.port,
         video_url=args.video_url,
     )
