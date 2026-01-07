@@ -32,7 +32,7 @@ class TerminalCast:
         self.known_hosts = known_hosts.split(',') if known_hosts else None
         self.requested_port = int(port) if port else None
         self.video_url = video_url
-        
+
         self.server_thread = None
 
     @cached_property

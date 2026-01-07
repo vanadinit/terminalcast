@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.2] - 2026-01-07
+
+### Changed
+- Environment variables (`TERMINALCAST_PORT`, `TERMINALCAST_KNOWN_HOSTS`, etc.) are now automatically respected when using `TerminalCast` as a library.
+
 ## [1.3.1] - 2026-01-07
 
 ### Added
