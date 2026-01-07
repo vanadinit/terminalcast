@@ -51,6 +51,12 @@ def main():
         help='IP address where hosted file should be provided',
     )
     parser.add_argument(
+        '--port',
+        help='Port where hosted file should be provided',
+        type=int,
+        default=int(getenv('TERMINALCAST_PORT', 0)) or None,
+    )
+    parser.add_argument(
         '--audio-title',
         help='Title of desired audio stream',
     )
@@ -88,6 +94,7 @@ def main():
         filepath=tmp_file_path or args.filepath,
         select_ip=args.ip or (args.select_ip and not args.non_interactive),
         known_hosts=known_hosts,
+        port=args.port,
     )
     print(f'IP: {tcast.ip}')
 

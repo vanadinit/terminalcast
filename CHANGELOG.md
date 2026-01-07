@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-01-07
+
+### Added
+- Add support for specifying a fixed port via `--port` CLI argument or `TERMINALCAST_PORT` environment variable.
+
 ## [1.2.2] - 2026-01-03
 
 ### Fixed

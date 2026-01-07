@@ -6,7 +6,7 @@ from datetime import datetime
 from functools import cached_property
 from tempfile import mkstemp
 from threading import Thread
-from typing import List, Callable
+from typing import Callable
 
 import ffmpeg
 from bottle import Bottle, static_file, request, response
@@ -19,10 +19,11 @@ from .helper import format_bytes, selector, simplify_user_agent
 
 
 class TerminalCast:
-    def __init__(self, filepath: str, select_ip: str | bool, known_hosts: List[str] | None = None):
+    def __init__(self, filepath: str, select_ip: str | bool, known_hosts: list[str] | None = None, port: int | None = None):
         self.filepath = os.path.abspath(filepath)
         self.select_ip = select_ip
         self.known_hosts = known_hosts
+        self.requested_port = port
         self.server_thread = None
 
     @cached_property
@@ -51,6 +52,9 @@ class TerminalCast:
 
     @cached_property
     def port(self) -> int:
+        if self.requested_port:
+            return self.requested_port
+
         with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
             s.bind(('0.0.0.0', 0))
             return s.getsockname()[1]

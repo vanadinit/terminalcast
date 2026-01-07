@@ -29,6 +29,17 @@ pip install terminalcast
 terminalcast my_video.mp4
 ```
 
+### Port Configuration
+By default, a random free port is chosen. You can specify a fixed port if needed (e.g. for firewall rules):
+```commandline
+terminalcast my_video.mp4 --port 8080
+```
+Alternatively, set the environment variable `TERMINALCAST_PORT`:
+```bash
+export TERMINALCAST_PORT=8080
+terminalcast my_video.mp4
+```
+
 ### Known Hosts
 If network discovery fails (e.g. due to network restrictions), you can specify known Chromecast IPs:
 ```commandline
@@ -82,11 +93,12 @@ tmp_filepath = create_tmp_video_file(
 )
 
 # 4. Initialize TerminalCast
-# You can pass known_hosts as a list of IPs
+# You can pass known_hosts as a list of IPs and a specific port
 tcast = TerminalCast(
     filepath=tmp_filepath or filepath,
     select_ip=False,  # or True for interactive selection, or a specific IP string
-    known_hosts=["192.168.1.50"]
+    known_hosts=["192.168.1.50"],
+    port=8080
 )
 
 # 5. Start the server and play
