@@ -57,6 +57,11 @@ def main():
         default=int(getenv('TERMINALCAST_PORT', 0)) or None,
     )
     parser.add_argument(
+        '--video-url',
+        help='Full URL where the video is accessible (e.g. https://my-server.com/cast/video)',
+        default=getenv('TERMINALCAST_VIDEO_URL'),
+    )
+    parser.add_argument(
         '--audio-title',
         help='Title of desired audio stream',
     )
@@ -95,6 +100,7 @@ def main():
         select_ip=args.ip or (args.select_ip and not args.non_interactive),
         known_hosts=known_hosts,
         port=args.port,
+        video_url=args.video_url,
     )
     print(f'IP: {tcast.ip}')
 

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.1] - 2026-01-07
+
+### Added
+- Add support for specifying a virtual host URL via `--video-url` CLI argument or `TERMINALCAST_VIDEO_URL` environment variable (useful for reverse proxies).
+
 ## [1.3.0] - 2026-01-07
 
 ### Added

@@ -40,6 +40,18 @@ export TERMINALCAST_PORT=8080
 terminalcast my_video.mp4
 ```
 
+### Reverse Proxy / Custom URL
+If you are running terminalcast behind a reverse proxy (e.g. Nginx, Traefik) and want to expose the video via a specific full URL:
+```commandline
+terminalcast my_video.mp4 --video-url https://my-server.com/cast/video
+```
+Alternatively, set the environment variable `TERMINALCAST_VIDEO_URL`:
+```bash
+export TERMINALCAST_VIDEO_URL="https://my-server.com/cast/video"
+terminalcast my_video.mp4
+```
+**Note:** You must ensure that your proxy forwards requests from this URL to the local terminalcast server (default path is `/video`).
+
 ### Known Hosts
 If network discovery fails (e.g. due to network restrictions), you can specify known Chromecast IPs:
 ```commandline
@@ -98,7 +110,8 @@ tcast = TerminalCast(
     filepath=tmp_filepath or filepath,
     select_ip=False,  # or True for interactive selection, or a specific IP string
     known_hosts=["192.168.1.50"],
-    port=8080
+    port=8080,
+    video_url="https://my-server.com/cast/video"
 )
 
 # 5. Start the server and play

@@ -19,11 +19,12 @@ from .helper import format_bytes, selector, simplify_user_agent
 
 
 class TerminalCast:
-    def __init__(self, filepath: str, select_ip: str | bool, known_hosts: list[str] | None = None, port: int | None = None):
+    def __init__(self, filepath: str, select_ip: str | bool, known_hosts: list[str] | None = None, port: int | None = None, video_url: str | None = None):
         self.filepath = os.path.abspath(filepath)
         self.select_ip = select_ip
         self.known_hosts = known_hosts
         self.requested_port = port
+        self.video_url = video_url
         self.server_thread = None
 
     @cached_property
@@ -81,10 +82,12 @@ class TerminalCast:
         time.sleep(5)
 
     def get_video_url(self) -> str:
+        if self.video_url:
+            return self.video_url
         return f'http://{self.ip}:{self.port}/video'
 
     def run_server(self):
-        print(self.get_video_url())
+        print(f'Serving video at: {self.get_video_url()}')
         run_http_server(filepath=self.filepath, ip=self.ip, port=self.port)
 
     def play_video(self):
